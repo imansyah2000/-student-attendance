@@ -8,209 +8,64 @@
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
-* {
-    box-sizing: border-box;
-}
-
 body {
-    margin: 0;
-    font-family: 'Segoe UI', Arial, sans-serif;
+    font-family: Arial, sans-serif;
     background: #f1f5f9;
-    color: #1e293b;
-}
-
-header {
-    background: linear-gradient(120deg, #0f172a, #1e40af);
-    color: white;
-    padding: 24px 7%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-.brand {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-.logo {
-    width: 48px;
-    height: 48px;
-    background: rgba(255,255,255,.15);
-    border-radius: 12px;
-    display: grid;
-    place-items: center;
-    font-size: 25px;
-}
-
-.brand h1 {
     margin: 0;
-    font-size: 21px;
+    padding: 20px;
+    text-align: center;
+    color: #142b50;
 }
 
-.brand p {
-    margin: 5px 0 0;
-    color: #bfdbfe;
-    font-size: 13px;
-}
-
-.datetime {
-    text-align: right;
-    font-size: 14px;
-    color: #dbeafe;
-}
-
-main {
-    max-width: 1050px;
-    margin: 35px auto;
-    padding: 0 20px;
-}
-
-.welcome {
-    margin-bottom: 25px;
-}
-
-.welcome h2 {
-    font-size: 27px;
-    margin: 0 0 8px;
-    color: #0f172a;
-}
-
-.welcome p {
-    color: #64748b;
-    margin: 0;
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: 1.3fr .7fr;
-    gap: 22px;
-}
-
-.card {
+.container {
+    max-width: 600px;
+    margin: auto;
     background: white;
-    border-radius: 18px;
     padding: 25px;
-    box-shadow: 0 5px 20px rgba(15,23,42,.05);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-.card h3 {
-    margin: 0 0 8px;
-    color: #0f172a;
-    font-size: 19px;
-}
-
-.description {
-    color: #64748b;
-    font-size: 13px;
-    margin-bottom: 20px;
+h1 {
+    color: #102c55;
 }
 
 #reader {
     width: 100%;
-    overflow: hidden;
-    border-radius: 12px;
-}
-
-#reader video {
-    border-radius: 12px;
+    max-width: 400px;
+    margin: 20px auto;
 }
 
 button {
+    background: #123b70;
+    color: white;
     border: none;
-    border-radius: 10px;
-    padding: 13px 18px;
-    font-size: 14px;
-    font-weight: 600;
+    padding: 14px 22px;
+    border-radius: 8px;
+    font-size: 16px;
     cursor: pointer;
-    transition: .2s;
+    margin: 5px;
 }
 
 button:hover {
-    opacity: .88;
-    transform: translateY(-1px);
-}
-
-.primary {
-    background: #2563eb;
-    color: white;
-}
-
-.secondary {
-    background: #e2e8f0;
-    color: #334155;
-}
-
-.danger {
-    background: #fee2e2;
-    color: #b91c1c;
-}
-
-.buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-}
-
-.buttons button {
-    flex: 1;
+    background: #0756a5;
 }
 
 input {
-    width: 100%;
-    padding: 15px;
-    border: 1px solid #cbd5e1;
-    border-radius: 10px;
+    width: 90%;
+    padding: 14px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
     font-size: 16px;
-    margin: 15px 0 10px;
-    outline: none;
 }
 
-input:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px #dbeafe;
-}
-
-.manual-button {
-    width: 100%;
-}
-
-.divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: #94a3b8;
-    font-size: 12px;
-    margin: 22px 0;
-}
-
-.divider::before,
-.divider::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    background: #e2e8f0;
-}
-
-.result {
-    display: none;
-    padding: 18px;
+#result {
     margin-top: 20px;
-    border-radius: 12px;
-    animation: appear .3s ease;
-}
-
-.result h3 {
-    margin: 0 0 8px;
-}
-
-.result p {
-    margin: 0;
-    white-space: pre-line;
-    font-size: 14px;
+    padding: 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    display: none;
 }
 
 .success {
@@ -227,201 +82,38 @@ input:focus {
     background: #fee2e2;
     color: #991b1b;
 }
-
-.sound-control {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 20px;
-    padding: 14px;
-    background: #f8fafc;
-    border-radius: 10px;
-    font-size: 14px;
-}
-
-.sound-control label {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-}
-
-.sound-control input {
-    width: auto;
-    margin: 0;
-}
-
-.info-box {
-    background: #eff6ff;
-    padding: 18px;
-    border-radius: 12px;
-    margin-top: 18px;
-}
-
-.info-box h4 {
-    margin: 0 0 10px;
-    color: #1e40af;
-}
-
-.info-box p {
-    color: #475569;
-    font-size: 13px;
-    line-height: 1.6;
-    margin: 0;
-}
-
-.status {
-    display: inline-block;
-    background: #dcfce7;
-    color: #15803d;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: bold;
-    margin-bottom: 18px;
-}
-
-footer {
-    text-align: center;
-    color: #94a3b8;
-    font-size: 12px;
-    padding: 25px;
-}
-
-@keyframes appear {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@media(max-width: 750px) {
-    header {
-        padding: 20px;
-    }
-
-    .datetime {
-        text-align: left;
-    }
-
-    main {
-        margin: 22px auto;
-        padding: 0 14px;
-    }
-
-    .grid {
-        grid-template-columns: 1fr;
-    }
-
-    .welcome h2 {
-        font-size: 23px;
-    }
-
-    .card {
-        padding: 19px;
-    }
-}
 </style>
 </head>
 
 <body>
 
-<header>
-    <div class="brand">
-        <div class="logo">🎓</div>
-        <div>
-            <h1>Student Attendance</h1>
-            <p>School Attendance Management System</p>
-        </div>
-    </div>
+<div class="container">
 
-    <div class="datetime">
-        <div id="date"></div>
-        <div id="time"></div>
-    </div>
-</header>
+    <h1>Student Attendance System</h1>
+    <p>QR Code Attendance Scanner</p>
 
-<main>
+    <div id="reader"></div>
 
-    <div class="welcome">
-        <h2>Attendance Scanner</h2>
-        <p>Scan student identification cards to record attendance.</p>
-    </div>
+    <button onclick="startScanner()">Start Scanner</button>
+    <button onclick="stopScanner()">Stop Scanner</button>
 
-    <div class="grid">
+    <hr>
 
-        <section class="card">
-            <div class="status">● SYSTEM ONLINE</div>
+    <h2>Manual Attendance</h2>
 
-            <h3>QR Code Scanner</h3>
-            <p class="description">
-                Position the student's QR code inside the scanning area.
-            </p>
+    <input
+        type="text"
+        id="studentID"
+        placeholder="Enter Student ID (e.g. STD001)"
+    >
 
-            <div id="reader"></div>
+    <br>
 
-            <div class="buttons">
-                <button class="primary" id="startButton" onclick="startScanner()">
-                    📷 Start Camera
-                </button>
+    <button onclick="manualCheckIn()">Submit Attendance</button>
 
-                <button class="danger" onclick="stopScanner()">
-                    Stop Camera
-                </button>
-            </div>
+    <div id="result"></div>
 
-            <div id="result" class="result">
-                <h3 id="resultTitle"></h3>
-                <p id="resultDetails"></p>
-            </div>
-        </section>
-
-        <section class="card">
-
-            <h3>Manual Attendance</h3>
-            <p class="description">
-                Enter the student's identification number manually.
-            </p>
-
-            <form onsubmit="manualCheckIn(); return false;">
-                <input
-                    type="text"
-                    id="manualID"
-                    placeholder="Example: STD001"
-                    autocomplete="off"
-                >
-
-                <button type="submit" class="primary manual-button">
-                    Submit Attendance →
-                </button>
-            </form>
-
-            <div class="divider">OR</div>
-
-            <div class="sound-control">
-                <label for="soundToggle">
-                    🔊 Attendance Sounds
-                </label>
-                <input type="checkbox" id="soundToggle" checked>
-            </div>
-
-            <div class="info-box">
-                <h4>How it works</h4>
-                <p>
-                    1. Start the camera scanner.<br>
-                    2. Scan the student's QR code.<br>
-                    3. Attendance is recorded automatically.<br>
-                    4. The result appears on screen with a sound notification.
-                </p>
-            </div>
-
-        </section>
-
-    </div>
-
-</main>
-
-<footer>
-    Student Attendance Management System<br>
-    Powered by Google Apps Script & Google Sheets
-</footer>
+</div>
 
 <script>
 
@@ -431,120 +123,65 @@ let scanner = null;
 let scanning = false;
 let processing = false;
 
-function updateClock() {
-    const now = new Date();
 
-    document.getElementById("date").innerText =
-        now.toLocaleDateString("en-MY", {
-            weekday: "long",
-            day: "numeric",
-            month: "long",
-            year: "numeric"
-        });
-
-    document.getElementById("time").innerText =
-        now.toLocaleTimeString("en-MY");
-}
-
-setInterval(updateClock, 1000);
-updateClock();
-
-function playSound(type) {
-
-    if (!document.getElementById("soundToggle").checked) return;
-
-    try {
-        const AudioContext =
-            window.AudioContext || window.webkitAudioContext;
-
-        const context = new AudioContext();
-
-        function beep(frequency, start, duration) {
-            const oscillator = context.createOscillator();
-            const gain = context.createGain();
-
-            oscillator.connect(gain);
-            gain.connect(context.destination);
-
-            oscillator.frequency.value = frequency;
-            oscillator.type = "sine";
-
-            gain.gain.setValueAtTime(0.15, context.currentTime + start);
-            gain.gain.exponentialRampToValueAtTime(
-                0.001,
-                context.currentTime + start + duration
-            );
-
-            oscillator.start(context.currentTime + start);
-            oscillator.stop(context.currentTime + start + duration);
-        }
-
-        if (type === "success") {
-            beep(880, 0, 0.15);
-            beep(1175, 0.18, 0.2);
-        } else if (type === "warning") {
-            beep(660, 0, 0.15);
-            beep(660, 0.22, 0.15);
-        } else {
-            beep(300, 0, 0.35);
-        }
-
-        setTimeout(() => context.close(), 1000);
-
-    } catch (error) {
-        console.log("Audio unavailable:", error);
-    }
-}
-
-function showResult(type, title, details) {
+// DISPLAY RESULT
+function showResult(type, message) {
 
     const result = document.getElementById("result");
 
+    result.className = type;
+    result.innerHTML = message;
     result.style.display = "block";
-    result.className = "result " + type;
 
-    document.getElementById("resultTitle").innerText = title;
-    document.getElementById("resultDetails").innerText = details || "";
-
-    playSound(type);
 }
 
+
+// SEND ATTENDANCE TO GOOGLE SHEETS
 function sendAttendance(studentID) {
 
-    if (processing) return;
+    if (!studentID || processing) return;
 
     processing = true;
 
+    showResult("warning", "Processing attendance...");
+
     const callbackName = "attendanceCallback_" + Date.now();
+
     const script = document.createElement("script");
 
-    let completed = false;
+    const timeout = setTimeout(() => {
 
-    const timeout = setTimeout(function() {
-        finish({
-            success: false,
-            message: "Connection timeout. Please try again."
-        });
+        cleanup();
+
+        showResult("error", "Unable to connect to attendance server.");
+
+        processing = false;
+
     }, 15000);
 
-    function finish(response) {
-
-        if (completed) return;
-
-        completed = true;
+    function cleanup() {
 
         clearTimeout(timeout);
-        script.remove();
+
+        if (script.parentNode) {
+            script.parentNode.removeChild(script);
+        }
 
         delete window[callbackName];
+
+    }
+
+    window[callbackName] = function(response) {
+
+        cleanup();
 
         if (response.success) {
 
             showResult(
                 "success",
-                "✓ ATTENDANCE SUCCESSFUL!",
-                "Student: " + response.name +
-                "\nClass: " + response.className
+                "ATTENDANCE SUCCESSFUL!<br><br>" +
+                "Name: " + response.name + "<br>" +
+                "Class: " + response.className
             );
 
         } else if (
@@ -552,45 +189,27 @@ function sendAttendance(studentID) {
             response.message.includes("Already Checked In")
         ) {
 
-            showResult(
-                "warning",
-                "⚠ ALREADY CHECKED IN!",
-                response.name || ""
-            );
+            showResult("warning", response.message);
 
         } else {
 
-            showResult(
-                "error",
-                "✕ ATTENDANCE FAILED",
-                response.message || "Student Not Found!"
-            );
+            showResult("error", response.message);
 
         }
 
-        setTimeout(function() {
+        setTimeout(() => {
 
             processing = false;
 
-            if (scanning && scanner) {
+            if (scanner && scanning) {
+
                 try {
                     scanner.resume();
-                } catch (error) {
-                    console.log(error);
-                }
+                } catch(e) {}
+
             }
 
         }, 2500);
-    }
-
-    window[callbackName] = finish;
-
-    script.onerror = function() {
-
-        finish({
-            success: false,
-            message: "Unable to connect to attendance server."
-        });
 
     };
 
@@ -601,56 +220,111 @@ function sendAttendance(studentID) {
         "&callback=" +
         callbackName;
 
+    script.onerror = function() {
+
+        cleanup();
+
+        showResult("error", "Unable to connect to attendance server.");
+
+        processing = false;
+
+    };
+
     document.body.appendChild(script);
+
 }
 
-function startScanner() {
+
+// START QR SCANNER
+async function startScanner() {
 
     if (scanning) return;
 
-    if (!scanner) {
+    try {
+
         scanner = new Html5Qrcode("reader");
-    }
 
-    scanner.start(
-        { facingMode: "environment" },
-        {
-            fps: 10,
-            qrbox: { width: 220, height: 220 }
-        },
+        await scanner.start(
+            { facingMode: "environment" },
+            {
+                fps: 10,
+                qrbox: 220
+            },
 
-        function(decodedText) {
+            (decodedText) => {
 
-            if (processing) return;
+                if (processing) return;
 
-            try {
-                scanner.pause(true);
-            } catch (error) {
-                console.log(error);
+                try {
+                    scanner.pause(true);
+                } catch(e) {}
+
+                sendAttendance(decodedText);
+
             }
-
-            sendAttendance(decodedText);
-
-        }
-
-    ).then(function() {
+        );
 
         scanning = true;
 
-        document.getElementById("startButton").innerText =
-            "✓ Camera Active";
-
-    }).catch(function(error) {
+    } catch(error) {
 
         showResult(
             "error",
-            "CAMERA ERROR",
-            String(error)
+            "Camera error. Please allow camera permission."
         );
 
-    });
+    }
+
 }
 
-function stopScanner() {
 
-    if (!scanner ||
+// STOP QR SCANNER
+async function stopScanner() {
+
+    if (!scanner || !scanning) return;
+
+    try {
+
+        await scanner.stop();
+
+        await scanner.clear();
+
+        scanner = null;
+
+        scanning = false;
+
+    } catch(error) {
+
+        console.log(error);
+
+    }
+
+}
+
+
+// MANUAL ATTENDANCE
+function manualCheckIn() {
+
+    const studentID = document
+        .getElementById("studentID")
+        .value
+        .trim();
+
+    if (!studentID) {
+
+        showResult("error", "Please enter a Student ID.");
+
+        return;
+
+    }
+
+    sendAttendance(studentID);
+
+    document.getElementById("studentID").value = "";
+
+}
+
+</script>
+
+</body>
+</html>
