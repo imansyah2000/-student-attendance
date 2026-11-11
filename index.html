@@ -209,7 +209,7 @@ function sendAttendance(studentID) {
 
   }, 15000);
 
-  script.onerror = function() {
+  script.onerror = function() {     console.error("API request failed:", script.src);      finish({       success: false,       message: "API request failed. Check browser console."     }); }; = function() {
 
     finish({
       success: false,
