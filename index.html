@@ -114,14 +114,20 @@ let scanning = false;
 let processing = false;
 let requestTimer = null;
 let audioContext = null;
+let resultTimer = null;
 
 function unlockAudio() {
-  if (!audioContext) {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  }
-
-  if (audioContext.state === "suspended") {
-    audioContext.resume();
+  try {
+    if (!audioContext) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+      audioContext = new AudioContextClass();
+    }
+    if (audioContext.state === "suspended") {
+      audioContext.resume();
+    }
+  } catch (error) {
+    console.warn("Audio is unavailable:", error);
   }
 }
 
@@ -131,19 +137,15 @@ function playBeep(type) {
   const beep = (frequency, duration, delay = 0) => {
     const oscillator = audioContext.createOscillator();
     const gain = audioContext.createGain();
-
     oscillator.connect(gain);
     gain.connect(audioContext.destination);
-
     oscillator.frequency.value = frequency;
     oscillator.type = "sine";
 
     const start = audioContext.currentTime + delay;
-
     gain.gain.setValueAtTime(0.001, start);
     gain.gain.linearRampToValueAtTime(0.3, start + 0.02);
     gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
-
     oscillator.start(start);
     oscillator.stop(start + duration);
   };
@@ -155,145 +157,200 @@ function playBeep(type) {
     beep(450, 0.2, 0.3);
   }
 }
-function updateClock(){
+
+function updateClock() {
   const now = new Date();
-  document.getElementById("today").textContent = now.toLocaleDateString("en-MY",{weekday:"short",day:"numeric",month:"short",year:"numeric"});
+  document.getElementById("today").textContent = now.toLocaleDateString("en-MY", {
+    weekday: "short", day: "numeric", month: "short", year: "numeric"
+  });
   document.getElementById("clock").textContent = now.toLocaleTimeString("en-MY");
 }
-updateClock(); setInterval(updateClock,1000);
+updateClock();
+setInterval(updateClock, 1000);
 
-function showResult(type,message){
-  const box=document.getElementById("result");
-  box.className=type;
-  box.innerHTML=message;
-  box.style.display="block";
-  box.scrollIntoView({behavior:"smooth",block:"nearest"});
+function showResult(type, message) {
+  const box = document.getElementById("result");
+  if (resultTimer) clearTimeout(resultTimer);
+  box.className = type;
+  box.innerHTML = message;
+  box.style.display = "block";
+  box.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-function sendAttendance(studentID){
-  studentID=String(studentID||"").trim();
-  if(!studentID){showResult("error","Please enter a Student ID.");return;}
-  if(processing)return;
-  processing=true;
-  showResult("warning","Processing attendance…");
+function hideResultAfterThreeSeconds() {
+  if (resultTimer) clearTimeout(resultTimer);
+  resultTimer = setTimeout(() => {
+    document.getElementById("result").style.display = "none";
+  }, 3000);
+}
 
-  const callbackName="attendanceCallback_"+Date.now()+"_"+Math.floor(Math.random()*10000);
-  const script=document.createElement("script");
-  let finished=false;
+function sendAttendance(studentID) {
+  studentID = String(studentID || "").trim();
+  if (!studentID) {
+    showResult("error", "Please enter a Student ID.");
+    return;
+  }
+  if (processing) return;
 
-  function cleanup(){
-    if(finished)return;
-    finished=true;
+  processing = true;
+  showResult("warning", "Processing attendance…");
+
+  const callbackName = "attendanceCallback_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
+  const script = document.createElement("script");
+  let finished = false;
+
+  function cleanup() {
+    if (finished) return;
+    finished = true;
     clearTimeout(requestTimer);
     script.remove();
-    try{delete window[callbackName];}catch(e){window[callbackName]=undefined;}
+    try {
+      delete window[callbackName];
+    } catch (error) {
+      window[callbackName] = undefined;
+    }
   }
 
-  requestTimer=setTimeout(()=>{
+  requestTimer = setTimeout(() => {
     cleanup();
-    showResult("error","Unable to connect to attendance server. Please try again.");
-    processing=false;
+    showResult("error", "Unable to connect to attendance server. Please try again.");
+    processing = false;
     resumeScannerIfOpen();
-  },15000);
+  }, 15000);
 
-  window[callbackName]=async function(response){   cleanup();    if(response && response.success){      if(scanner) await closeScanner();      playBeep("success");      showResult("success",       "<strong>✓ CHECKED IN!</strong>"+       '<div class="student-line">Name: <b>'+escapeHtml(response.name||"")+'</b></div>'+       '<div class="student-line">Class: <b>'+escapeHtml(response.className||"")+'</b></div>'+       '<div class="student-line">Status: <b>PRESENT</b></div>'+       '<div class="student-line">Time: <b>'+new Date().toLocaleTimeString("en-MY")+'</b></div>'     );      setTimeout(()=>{       document.getElementById("result").style.display="none";     },3000);    }else{      const msg=(response&&response.message)||"Unable to record attendance.";     const duplicate=msg.toLowerCase().includes("already")||                     msg.toLowerCase().includes("checked in");      if(duplicate){       if(scanner) await closeScanner();        playBeep("duplicate");        showResult("warning",         "<strong>⚠ ALREADY CHECKED IN</strong>"+         "<div>"+escapeHtml(msg)+"</div>"       );        setTimeout(()=>{         document.getElementById("result").style.display="none";       },3000);      }else{       showResult("error",escapeHtml(msg));     }   }    processing=false; };
+  window[callbackName] = async function(response) {
     cleanup();
-    if(response && response.success){
+
+    if (response && response.success) {
+      if (scanner) await closeScanner();
+      playBeep("success");
       showResult("success",
-        "<strong>✓ Attendance Recorded!</strong>"+
-        '<div class="student-line">Name: <b>'+escapeHtml(response.name||"")+'</b></div>'+
-        '<div class="student-line">Class: <b>'+escapeHtml(response.className||"")+'</b></div>'+
-        '<div class="student-line">Time: <b>'+new Date().toLocaleTimeString("en-MY")+'</b></div>');
-    }else{
-      const msg=(response&&response.message)||"Unable to record attendance.";
-      const duplicate=msg.toLowerCase().includes("already")||msg.toLowerCase().includes("checked in");
-      showResult(duplicate?"warning":"error",escapeHtml(msg));
+        "<strong>✓ CHECKED IN!</strong>" +
+        '<div class="student-line">Name: <b>' + escapeHtml(response.name || "") + '</b></div>' +
+        '<div class="student-line">Class: <b>' + escapeHtml(response.className || "") + '</b></div>' +
+        '<div class="student-line">Status: <b>PRESENT</b></div>' +
+        '<div class="student-line">Time: <b>' + new Date().toLocaleTimeString("en-MY") + '</b></div>'
+      );
+      hideResultAfterThreeSeconds();
+    } else {
+      const msg = (response && response.message) || "Unable to record attendance.";
+      const duplicate = msg.toLowerCase().includes("already") || msg.toLowerCase().includes("checked in");
+
+      if (duplicate) {
+        if (scanner) await closeScanner();
+        playBeep("duplicate");
+        showResult("warning",
+          "<strong>⚠ ALREADY CHECKED IN</strong>" +
+          "<div>" + escapeHtml(msg) + "</div>"
+        );
+        hideResultAfterThreeSeconds();
+      } else {
+        showResult("error", escapeHtml(msg));
+        resumeScannerIfOpen();
+      }
     }
-    setTimeout(()=>{processing=false;resumeScannerIfOpen();},1800);
+
+    processing = false;
   };
 
-  script.onerror=function(){
+  script.onerror = function() {
     cleanup();
-    showResult("error","Unable to connect to attendance server. Check your internet connection.");
-    processing=false;
+    showResult("error", "Unable to connect to attendance server. Check your internet connection.");
+    processing = false;
     resumeScannerIfOpen();
   };
 
-  script.src=API_URL+"?action=scan&id="+encodeURIComponent(studentID)+"&callback="+callbackName;
+  script.src = API_URL + "?action=scan&id=" + encodeURIComponent(studentID) + "&callback=" + callbackName;
   document.body.appendChild(script);
 }
 
-function escapeHtml(value){
-  return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, character => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[character]));
 }
 
-async function openScanner(){
+async function openScanner() {
   unlockAudio();
-  
   document.getElementById("scannerModal").classList.remove("hidden");
-  if(!window.Html5Qrcode){
-    showResult("error","Scanner library did not load. Check your internet connection.");
+
+  if (!window.Html5Qrcode) {
+    showResult("error", "Scanner library did not load. Check your internet connection.");
     return;
   }
-  if(scanner && scanning)return;
-  try{
-    scanner=new Html5Qrcode("reader");
+  if (scanner && scanning) return;
+
+  try {
+    scanner = new Html5Qrcode("reader");
     await scanner.start(
-      {facingMode:"environment"},
-      {fps:10,qrbox:{width:230,height:230},aspectRatio:1.0},
-      decodedText=>{
-        if(processing)return;
-        try{scanner.pause(true);}catch(e){}
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 230, height: 230 }, aspectRatio: 1.0 },
+      decodedText => {
+        if (processing) return;
+        try { scanner.pause(true); } catch (error) {}
         sendAttendance(decodedText);
       },
-      ()=>{}
+      () => {}
     );
-    scanning=true;
-  }catch(error){
-    scanning=false;
-    showResult("error","Could not open the camera. Allow camera permission in your browser and try again.");
+    scanning = true;
+  } catch (error) {
+    scanning = false;
+    console.error("Camera start failed:", error);
+    showResult("error", "Could not open the camera. Allow camera permission in your browser and try again.");
   }
 }
 
-function resumeScannerIfOpen(){
-  if(scanner && scanning && !document.getElementById("scannerModal").classList.contains("hidden")){
-    try{scanner.resume();}catch(e){}
+function resumeScannerIfOpen() {
+  if (scanner && scanning && !document.getElementById("scannerModal").classList.contains("hidden")) {
+    try { scanner.resume(); } catch (error) {}
   }
 }
 
-async function closeScanner(){
-  const modal=document.getElementById("scannerModal");
+async function closeScanner() {
+  const modal = document.getElementById("scannerModal");
   modal.classList.add("hidden");
-  if(scanner){
-    try{if(scanning)await scanner.stop();}catch(e){}
-    try{await scanner.clear();}catch(e){}
+
+  if (scanner) {
+    try {
+      if (scanning) await scanner.stop();
+    } catch (error) {
+      console.warn("Scanner stop:", error);
+    }
+    try {
+      await scanner.clear();
+    } catch (error) {
+      console.warn("Scanner clear:", error);
+    }
   }
-  scanner=null;
-  scanning=false;
+  scanner = null;
+  scanning = false;
 }
 
-document.getElementById("openScanner").addEventListener("click",openScanner);
-document.getElementById("closeScanner").addEventListener("click",closeScanner);
-document.getElementById("scannerModal").addEventListener("click",e=>{
-  if(e.target.id==="scannerModal")closeScanner();
+document.getElementById("openScanner").addEventListener("click", openScanner);
+document.getElementById("closeScanner").addEventListener("click", closeScanner);
+document.getElementById("scannerModal").addEventListener("click", event => {
+  if (event.target.id === "scannerModal") closeScanner();
 });
-document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"&&!document.getElementById("scannerModal").classList.contains("hidden"))closeScanner();
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && !document.getElementById("scannerModal").classList.contains("hidden")) {
+    closeScanner();
+  }
 });
-document.getElementById("submitManual").addEventListener("click",()=>{
-  const input=document.getElementById("studentID");
+document.getElementById("submitManual").addEventListener("click", () => {
+  unlockAudio();
+  const input = document.getElementById("studentID");
   sendAttendance(input.value);
-  input.value="";
+  input.value = "";
 });
-document.getElementById("studentID").addEventListener("keydown",e=>{
-  if(e.key==="Enter")document.getElementById("submitManual").click();
+document.getElementById("studentID").addEventListener("keydown", event => {
+  if (event.key === "Enter") document.getElementById("submitManual").click();
 });
-document.getElementById("manualFocus").addEventListener("click",()=>{
-  document.getElementById("manualCard").scrollIntoView({behavior:"smooth"});
-  setTimeout(()=>document.getElementById("studentID").focus(),350);
+document.getElementById("manualFocus").addEventListener("click", () => {
+  document.getElementById("manualCard").scrollIntoView({ behavior: "smooth" });
+  setTimeout(() => document.getElementById("studentID").focus(), 350);
 });
-document.getElementById("showHow").addEventListener("click",()=>{
-  document.getElementById("howCard").scrollIntoView({behavior:"smooth"});
+document.getElementById("showHow").addEventListener("click", () => {
+  document.getElementById("howCard").scrollIntoView({ behavior: "smooth" });
 });
 </script>
 </body>
