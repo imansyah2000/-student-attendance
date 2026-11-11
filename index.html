@@ -214,16 +214,29 @@ function sendAttendance(studentID) {
 
   window[callbackName] = finish;
 
-  script.onerror = function() {
+  script.onerror = function(event) {
 
-    console.error("API request failed:", script.src);
+  console.error("API request failed:", script.src, event);
 
-    finish({
-      success: false,
-      message: "Unable to connect to attendance server."
-    });
+  finish({
+    success: false,
+    message: "Safari could not load the API request. Check your internet connection or browser settings."
+  });
 
-  };
+};
+
+script.onload = function() {
+  console.log("API script loaded successfully.");
+
+  setTimeout(function() {
+    if (!completed) {
+      finish({
+        success: false,
+        message: "API loaded, but no response was received."
+      });
+    }
+  }, 3000);
+};
 
   script.src =
     API_URL +
