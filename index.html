@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Student Attendance Scanner</title>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 420px;
+      margin: 20px auto;
+      background: white;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    h2 { color: #1e3a8a; }
+
+    .subtitle { color: #64748b; }
+
+    #reader {
+      width: 100%;
+      margin: auto;
+    }
+
+    #result {
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: 10px;
+      display: none;
+      white-space: pre-line;
+    }
+
+    .success {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .warning {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    button {
+      background: #1e40af;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-top: 15px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    input {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    .footer {
+      margin-top: 25px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h2>Student Attendance</h2>
+  <p class="subtitle">School QR Code Scanner</p>
+
+  <div id="reader"></div>
+
+  <div id="result">
+    <div id="resultTitle" style="font-weight:bold;font-size:20px"></div>
+    <div id="resultDetails"></div>
+  </div>
+
+  <button onclick="startScanner()">Start Scanner</button>
+
+  <p>Or enter Student ID manually:</p>
+
+  <input type="text" id="manualID" placeholder="Enter Student ID">
+
+  <button onclick="manualCheckIn()">Submit Attendance</button>
+
+  <div class="footer">
+    Student Attendance Management System
+  </div>
+
+</div>
+
+<script>
+
+const API_URL = "https://script.google.com/macros/s/AKfycbyzPbm_l7TNCw9c5OMoTrGMjWxiBLPs3A12YBQ6wz489Nt1B5dtZ-8NfXGbKhNqH2e3Ow/exec";
+
+let scanner;
+let scanning = false;
+let processing = false;
+
+function showResult(type, title, details) {
+
+  const result = document.getElementById("result");
+
+  result.style.display = "block";
+  result.className = type;
+
+  document.getElementById("resultTitle").innerText = title;
+  document.getElementById("resultDetails").innerText = details || "";
+}
+
+function sendAttendance(studentID) {
+
+  if (processing) return;
+
+  processing = true;
+
+  const callbackName = "attendanceCallback_" + Date.now();
+
+  const script = document.createElement("script");
+
+  let completed = false;
+
+  function finish(response) {
+
+    if (completed) return;
+    completed = true;
+
+    clearTimeout(timeout);
+    script.remove();
+
+    delete window[callbackName];
+
+    if (response.success) {
+
+      showResult(
+        "success",
+        "ATTENDANCE SUCCESSFUL!",
+        "Student: " + response.name +
+        "\nClass: " + response.className
+      );
+
+    } else if (
+      response.message &&
+      response.message.includes("Already Checked In")
+    ) {
+
+      showResult(
+        "warning",
+        "ALREADY CHECKED IN!",
+        response.name || ""
+      );
+
+    } else {
+
+      showResult(
+        "error",
+        response.message || "Student Not Found!",
+        response.name || ""
+      );
+
+    }
+
+    setTimeout(() => {
+
+      processing = false;
+
+      if (scanning && scanner) {
+        scanner.resume();
+      }
+
+    }, 2500);
+  }
+
+  window[callbackName] = finish;
+
+  const timeout = setTimeout(() => {
+
+    finish({
+      success: false,
+      message: "Connection timeout. Please try again."
+    });
+
+  }, 15000);
+
+  script.onerror = function() {
+
+    finish({
+      success: false,
+      message: "Unable to connect to attendance server."
+    });
+
+  };
+
+  script.src =
+    API_URL +
+    "?action=scan&id=" +
+    encodeURIComponent(studentID) +
+    "&callback=" +
+    callbackName;
+
+  document.body.appendChild(script);
+}
+
+function startScanner() {
+
+  if (scanning) return;
+
+  if (!scanner) {
+    scanner = new Html5Qrcode("reader");
+  }
+
+  scanner.start(
+    { facingMode: "environment" },
+    {
+      fps: 10,
+      qrbox: { width: 220, height: 220 }
+    },
+
+    function(decodedText) {
+
+      if (processing) return;
+
+      scanner.pause(true);
+
+      sendAttendance(decodedText);
+
+    }
+
+  ).then(() => {
+
+    scanning = true;
+
+  }).catch(error => {
+
+    showResult(
+      "error",
+      "CAMERA ERROR",
+      String(error)
+    );
+
+  });
+}
+
+function manualCheckIn() {
+
+  const id = document.getElementById("manualID").value.trim();
+
+  if (!id) {
+    alert("Please enter Student ID");
+    return;
+  }
+
+  sendAttendance(id);
+
+  document.getElementById("manualID").value = "";
+
+}
+
+</script>
+
+</body>
+</html>
