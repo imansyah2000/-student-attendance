@@ -1,3 +1,4 @@
+?variant="standard" title="Student Attendance Scanner — index.html" id="62841"}
 <!DOCTYPE html>
 <html>
 <head>
@@ -120,7 +121,7 @@
 
 const API_URL = "https://script.google.com/macros/s/AKfycbyzPbm_l7TNCw9c5OMoTrGMjWxiBLPs3A12YBQ6wz489Nt1B5dtZ-8NfXGbKhNqH2e3Ow/exec";
 
-let scanner;
+let scanner = null;
 let scanning = false;
 let processing = false;
 
@@ -142,14 +143,23 @@ function sendAttendance(studentID) {
   processing = true;
 
   const callbackName = "attendanceCallback_" + Date.now();
-
   const script = document.createElement("script");
 
   let completed = false;
 
+  const timeout = setTimeout(function() {
+
+    finish({
+      success: false,
+      message: "Connection timeout. Please try again."
+    });
+
+  }, 15000);
+
   function finish(response) {
 
     if (completed) return;
+
     completed = true;
 
     clearTimeout(timeout);
@@ -187,12 +197,16 @@ function sendAttendance(studentID) {
 
     }
 
-    setTimeout(() => {
+    setTimeout(function() {
 
       processing = false;
 
       if (scanning && scanner) {
-        scanner.resume();
+        try {
+          scanner.resume();
+        } catch (error) {
+          console.log(error);
+        }
       }
 
     }, 2500);
@@ -200,16 +214,9 @@ function sendAttendance(studentID) {
 
   window[callbackName] = finish;
 
-  const timeout = setTimeout(() => {
+  script.onerror = function() {
 
-    finish({
-      success: false,
-      message: "Connection timeout. Please try again."
-    });
-
-  }, 15000);
-
-  script.onerror = function() {     console.error("API request failed:", script.src);      finish({       success: false,       message: "API request failed. Check browser console."     }); }; = function() {
+    console.error("API request failed:", script.src);
 
     finish({
       success: false,
@@ -247,17 +254,21 @@ function startScanner() {
 
       if (processing) return;
 
-      scanner.pause(true);
+      try {
+        scanner.pause(true);
+      } catch (error) {
+        console.log(error);
+      }
 
       sendAttendance(decodedText);
 
     }
 
-  ).then(() => {
+  ).then(function() {
 
     scanning = true;
 
-  }).catch(error => {
+  }).catch(function(error) {
 
     showResult(
       "error",
