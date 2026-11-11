@@ -2,329 +2,256 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Student Attendance System</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#082b63">
+<title>SK Tambulaong Tuaran | Student Attendance</title>
 <script src="https://unpkg.com/html5-qrcode"></script>
-
 <style>
-body {
-    font-family: Arial, sans-serif;
-    background: #f1f5f9;
-    margin: 0;
-    padding: 20px;
-    text-align: center;
-    color: #142b50;
-}
-
-.container {
-    max-width: 600px;
-    margin: auto;
-    background: white;
-    padding: 25px;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-h1 {
-    color: #102c55;
-}
-
-#reader {
-    width: 100%;
-    max-width: 400px;
-    margin: 20px auto;
-}
-
-button {
-    background: #123b70;
-    color: white;
-    border: none;
-    padding: 14px 22px;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;
-    margin: 5px;
-}
-
-button:hover {
-    background: #0756a5;
-}
-
-input {
-    width: 90%;
-    padding: 14px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 16px;
-}
-
-#result {
-    margin-top: 20px;
-    padding: 15px;
-    border-radius: 8px;
-    font-weight: bold;
-    display: none;
-}
-
-.success {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.warning {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.error {
-    background: #fee2e2;
-    color: #991b1b;
-}
+:root{--navy:#082b63;--blue:#075bc2;--pale:#edf5ff;--ink:#102b58;--muted:#66758d}
+*{box-sizing:border-box}
+body{margin:0;background:#f3f7fd;color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+.page{max-width:560px;margin:auto;padding-bottom:28px;background:#f8fbff;min-height:100vh;box-shadow:0 0 30px #102b5810}
+.hero{background:linear-gradient(145deg,#075fc7,#08265b 58%,#061d48);color:white;text-align:center;padding:22px 18px 0;border-radius:0 0 28px 28px;overflow:hidden}
+.logo{width:92px;height:92px;object-fit:contain;display:block;margin:0 auto 8px}
+h1{font-size:clamp(22px,6vw,30px);line-height:1.12;margin:5px 0 4px;font-weight:800;letter-spacing:.3px}
+.subtitle{font-size:16px;margin:0 0 17px;color:#e8f1ff}
+.school-photo{width:calc(100% + 36px);margin:0 -18px;display:block;height:190px;object-fit:cover;object-position:center 53%;border-radius:24px 24px 0 0;border-top:3px solid #ffffff55}
+.content{padding:15px 16px}
+.datetime{display:flex;justify-content:space-around;align-items:center;gap:8px;background:#fff;border:1px solid #dce7f7;border-radius:16px;padding:14px 10px;margin:0 0 15px;box-shadow:0 4px 12px #12315b12;font-weight:700;font-size:14px}
+.datetime span{display:flex;align-items:center;gap:7px}
+.primary{width:100%;border:0;border-radius:17px;padding:19px 14px;background:linear-gradient(110deg,#0869d7,#073c91);color:white;font-size:20px;font-weight:800;box-shadow:0 6px 14px #075bc233;cursor:pointer}
+.primary:active,button:active{transform:scale(.99)}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin:14px 0}
+.quick button{border:1px solid #dbe7f8;background:white;border-radius:15px;padding:14px 8px;color:var(--ink);font-weight:700;font-size:14px;box-shadow:0 3px 10px #12315b0d;cursor:pointer}
+.quick .icon{display:block;font-size:23px;margin-bottom:5px;color:var(--blue)}
+.card{background:#fff;border:1px solid #dce7f7;border-radius:17px;padding:15px;margin-top:13px;box-shadow:0 3px 12px #12315b0d}
+.card h2{font-size:18px;margin:0 0 8px}
+#result{display:none;border-radius:16px;padding:15px;margin-top:14px;line-height:1.55}
+#result.success{display:block;background:#e4fbe9;border:1px solid #b8efc4;color:#12612a}
+#result.warning{display:block;background:#fff6d9;border:1px solid #f5df9b;color:#805400}
+#result.error{display:block;background:#ffeded;border:1px solid #f4c4c4;color:#982727}
+.student-line{display:flex;gap:8px;margin:4px 0}
+.manual-row{display:flex;gap:8px}
+input{min-width:0;flex:1;border:1px solid #cbd7e8;border-radius:11px;padding:13px;font-size:16px;outline:none}
+input:focus{border-color:#2476d5;box-shadow:0 0 0 3px #2476d51a}
+.submit{border:0;border-radius:11px;padding:0 18px;background:var(--navy);color:#fff;font-weight:700;font-size:15px;cursor:pointer}
+.how{background:#e8f2ff}
+.how ol{margin:8px 0 0;padding-left:22px;line-height:1.8;font-size:14px}
+.footer{text-align:center;color:#73819a;font-size:12px;padding:20px 10px 4px}
+.hidden{display:none!important}
+/* Scanner modal */
+.modal{position:fixed;inset:0;z-index:10;background:#061a39eF;display:flex;align-items:center;justify-content:center;padding:18px}
+.modal-panel{width:min(100%,480px);background:#fff;border-radius:22px;padding:17px;box-shadow:0 20px 60px #0006}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.modal-head h2{margin:0;font-size:19px}
+.close{border:0;background:#edf3fb;color:var(--ink);font-size:25px;width:40px;height:40px;border-radius:50%;cursor:pointer}
+#reader{width:100%;overflow:hidden;border-radius:15px;background:#101b2d;min-height:250px}
+.scan-hint{text-align:center;color:var(--muted);font-size:14px;margin:12px 0 2px}
+@media(min-width:700px){.page{margin:20px auto;border-radius:25px;overflow:hidden}.hero{padding-top:25px}.school-photo{height:230px}}
 </style>
 </head>
-
 <body>
+<div class="page">
+  <header class="hero">
+    <img class="logo" src="assets/school-logo.png" alt="SK Tambulaong Tuaran crest">
+    <h1>SK TAMBULAONG TUARAN</h1>
+    <p class="subtitle">Student Attendance System</p>
+    <img class="school-photo" src="assets/school-walkway.jpg" alt="School walkway">
+  </header>
 
-<div class="container">
+  <main class="content">
+    <div class="datetime">
+      <span>📅 <b id="today">Loading date…</b></span>
+      <span>🕒 <b id="clock">--:--:--</b></span>
+    </div>
 
-    <h1>Student Attendance System</h1>
-    <p>QR Code Attendance Scanner</p>
+    <button class="primary" id="openScanner">▣ &nbsp; SCAN ATTENDANCE</button>
 
+    <div class="quick">
+      <button id="manualFocus"><span class="icon">⌨</span>Manual Attendance</button>
+      <button id="showHow"><span class="icon">ⓘ</span>How It Works</button>
+    </div>
+
+    <div id="result" aria-live="polite"></div>
+
+    <section class="card" id="manualCard">
+      <h2>Manual Attendance</h2>
+      <p style="margin:0 0 10px;color:#66758d;font-size:13px">Enter the student ID if scanning is unavailable.</p>
+      <div class="manual-row">
+        <input id="studentID" type="text" placeholder="Student ID (e.g. STD001)" autocomplete="off">
+        <button class="submit" id="submitManual">Submit</button>
+      </div>
+    </section>
+
+    <section class="card how" id="howCard">
+      <h2>How It Works</h2>
+      <ol>
+        <li>Tap <b>SCAN ATTENDANCE</b>.</li>
+        <li>Allow camera access and position the student's QR code in the frame.</li>
+        <li>Attendance is recorded automatically in the school register.</li>
+      </ol>
+    </section>
+    <div class="footer">SK TAMBULAONG TUARAN · Student Attendance System</div>
+  </main>
+</div>
+
+<div class="modal hidden" id="scannerModal" role="dialog" aria-modal="true" aria-labelledby="scanTitle">
+  <div class="modal-panel">
+    <div class="modal-head">
+      <h2 id="scanTitle">Scan Student QR Code</h2>
+      <button class="close" id="closeScanner" aria-label="Close scanner">×</button>
+    </div>
     <div id="reader"></div>
-
-    <button onclick="startScanner()">Start Scanner</button>
-    <button onclick="stopScanner()">Stop Scanner</button>
-
-    <hr>
-
-    <h2>Manual Attendance</h2>
-
-    <input
-        type="text"
-        id="studentID"
-        placeholder="Enter Student ID (e.g. STD001)"
-    >
-
-    <br>
-
-    <button onclick="manualCheckIn()">Submit Attendance</button>
-
-    <div id="result"></div>
-
+    <p class="scan-hint">Position the student's QR code inside the frame.</p>
+  </div>
 </div>
 
 <script>
-
 const API_URL = "https://script.google.com/macros/s/AKfycbyzPbm_l7TNCw9c5OMoTrGMjWxiBLPs3A12YBQ6wz489Nt1B5dtZ-8NfXGbKhNqH2e3Ow/exec";
 
 let scanner = null;
 let scanning = false;
 let processing = false;
+let requestTimer = null;
 
+function updateClock(){
+  const now = new Date();
+  document.getElementById("today").textContent = now.toLocaleDateString("en-MY",{weekday:"short",day:"numeric",month:"short",year:"numeric"});
+  document.getElementById("clock").textContent = now.toLocaleTimeString("en-MY");
+}
+updateClock(); setInterval(updateClock,1000);
 
-// DISPLAY RESULT
-function showResult(type, message) {
-
-    const result = document.getElementById("result");
-
-    result.className = type;
-    result.innerHTML = message;
-    result.style.display = "block";
-
+function showResult(type,message){
+  const box=document.getElementById("result");
+  box.className=type;
+  box.innerHTML=message;
+  box.style.display="block";
+  box.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 
+function sendAttendance(studentID){
+  studentID=String(studentID||"").trim();
+  if(!studentID){showResult("error","Please enter a Student ID.");return;}
+  if(processing)return;
+  processing=true;
+  showResult("warning","Processing attendance…");
 
-// SEND ATTENDANCE TO GOOGLE SHEETS
-function sendAttendance(studentID) {
+  const callbackName="attendanceCallback_"+Date.now()+"_"+Math.floor(Math.random()*10000);
+  const script=document.createElement("script");
+  let finished=false;
 
-    if (!studentID || processing) return;
+  function cleanup(){
+    if(finished)return;
+    finished=true;
+    clearTimeout(requestTimer);
+    script.remove();
+    try{delete window[callbackName];}catch(e){window[callbackName]=undefined;}
+  }
 
-    processing = true;
+  requestTimer=setTimeout(()=>{
+    cleanup();
+    showResult("error","Unable to connect to attendance server. Please try again.");
+    processing=false;
+    resumeScannerIfOpen();
+  },15000);
 
-    showResult("warning", "Processing attendance...");
-
-    const callbackName = "attendanceCallback_" + Date.now();
-
-    const script = document.createElement("script");
-
-    const timeout = setTimeout(() => {
-
-        cleanup();
-
-        showResult("error", "Unable to connect to attendance server.");
-
-        processing = false;
-
-    }, 15000);
-
-    function cleanup() {
-
-        clearTimeout(timeout);
-
-        if (script.parentNode) {
-            script.parentNode.removeChild(script);
-        }
-
-        delete window[callbackName];
-
+  window[callbackName]=function(response){
+    cleanup();
+    if(response && response.success){
+      showResult("success",
+        "<strong>✓ Attendance Recorded!</strong>"+
+        '<div class="student-line">Name: <b>'+escapeHtml(response.name||"")+'</b></div>'+
+        '<div class="student-line">Class: <b>'+escapeHtml(response.className||"")+'</b></div>'+
+        '<div class="student-line">Time: <b>'+new Date().toLocaleTimeString("en-MY")+'</b></div>');
+    }else{
+      const msg=(response&&response.message)||"Unable to record attendance.";
+      const duplicate=msg.toLowerCase().includes("already")||msg.toLowerCase().includes("checked in");
+      showResult(duplicate?"warning":"error",escapeHtml(msg));
     }
+    setTimeout(()=>{processing=false;resumeScannerIfOpen();},1800);
+  };
 
-    window[callbackName] = function(response) {
+  script.onerror=function(){
+    cleanup();
+    showResult("error","Unable to connect to attendance server. Check your internet connection.");
+    processing=false;
+    resumeScannerIfOpen();
+  };
 
-        cleanup();
-
-        if (response.success) {
-
-            showResult(
-                "success",
-                "ATTENDANCE SUCCESSFUL!<br><br>" +
-                "Name: " + response.name + "<br>" +
-                "Class: " + response.className
-            );
-
-        } else if (
-            response.message &&
-            response.message.includes("Already Checked In")
-        ) {
-
-            showResult("warning", response.message);
-
-        } else {
-
-            showResult("error", response.message);
-
-        }
-
-        setTimeout(() => {
-
-            processing = false;
-
-            if (scanner && scanning) {
-
-                try {
-                    scanner.resume();
-                } catch(e) {}
-
-            }
-
-        }, 2500);
-
-    };
-
-    script.src =
-        API_URL +
-        "?action=scan&id=" +
-        encodeURIComponent(studentID) +
-        "&callback=" +
-        callbackName;
-
-    script.onerror = function() {
-
-        cleanup();
-
-        showResult("error", "Unable to connect to attendance server.");
-
-        processing = false;
-
-    };
-
-    document.body.appendChild(script);
-
+  script.src=API_URL+"?action=scan&id="+encodeURIComponent(studentID)+"&callback="+callbackName;
+  document.body.appendChild(script);
 }
 
-
-// START QR SCANNER
-async function startScanner() {
-
-    if (scanning) return;
-
-    try {
-
-        scanner = new Html5Qrcode("reader");
-
-        await scanner.start(
-            { facingMode: "environment" },
-            {
-                fps: 10,
-                qrbox: 220
-            },
-
-            (decodedText) => {
-
-                if (processing) return;
-
-                try {
-                    scanner.pause(true);
-                } catch(e) {}
-
-                sendAttendance(decodedText);
-
-            }
-        );
-
-        scanning = true;
-
-    } catch(error) {
-
-        showResult(
-            "error",
-            "Camera error. Please allow camera permission."
-        );
-
-    }
-
+function escapeHtml(value){
+  return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
-
-// STOP QR SCANNER
-async function stopScanner() {
-
-    if (!scanner || !scanning) return;
-
-    try {
-
-        await scanner.stop();
-
-        await scanner.clear();
-
-        scanner = null;
-
-        scanning = false;
-
-    } catch(error) {
-
-        console.log(error);
-
-    }
-
+async function openScanner(){
+  document.getElementById("scannerModal").classList.remove("hidden");
+  if(!window.Html5Qrcode){
+    showResult("error","Scanner library did not load. Check your internet connection.");
+    return;
+  }
+  if(scanner && scanning)return;
+  try{
+    scanner=new Html5Qrcode("reader");
+    await scanner.start(
+      {facingMode:"environment"},
+      {fps:10,qrbox:{width:230,height:230},aspectRatio:1.0},
+      decodedText=>{
+        if(processing)return;
+        try{scanner.pause(true);}catch(e){}
+        sendAttendance(decodedText);
+      },
+      ()=>{}
+    );
+    scanning=true;
+  }catch(error){
+    scanning=false;
+    showResult("error","Could not open the camera. Allow camera permission in your browser and try again.");
+  }
 }
 
-
-// MANUAL ATTENDANCE
-function manualCheckIn() {
-
-    const studentID = document
-        .getElementById("studentID")
-        .value
-        .trim();
-
-    if (!studentID) {
-
-        showResult("error", "Please enter a Student ID.");
-
-        return;
-
-    }
-
-    sendAttendance(studentID);
-
-    document.getElementById("studentID").value = "";
-
+function resumeScannerIfOpen(){
+  if(scanner && scanning && !document.getElementById("scannerModal").classList.contains("hidden")){
+    try{scanner.resume();}catch(e){}
+  }
 }
 
+async function closeScanner(){
+  const modal=document.getElementById("scannerModal");
+  modal.classList.add("hidden");
+  if(scanner){
+    try{if(scanning)await scanner.stop();}catch(e){}
+    try{await scanner.clear();}catch(e){}
+  }
+  scanner=null;
+  scanning=false;
+}
+
+document.getElementById("openScanner").addEventListener("click",openScanner);
+document.getElementById("closeScanner").addEventListener("click",closeScanner);
+document.getElementById("scannerModal").addEventListener("click",e=>{
+  if(e.target.id==="scannerModal")closeScanner();
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&!document.getElementById("scannerModal").classList.contains("hidden"))closeScanner();
+});
+document.getElementById("submitManual").addEventListener("click",()=>{
+  const input=document.getElementById("studentID");
+  sendAttendance(input.value);
+  input.value="";
+});
+document.getElementById("studentID").addEventListener("keydown",e=>{
+  if(e.key==="Enter")document.getElementById("submitManual").click();
+});
+document.getElementById("manualFocus").addEventListener("click",()=>{
+  document.getElementById("manualCard").scrollIntoView({behavior:"smooth"});
+  setTimeout(()=>document.getElementById("studentID").focus(),350);
+});
+document.getElementById("showHow").addEventListener("click",()=>{
+  document.getElementById("howCard").scrollIntoView({behavior:"smooth"});
+});
 </script>
-
 </body>
 </html>
