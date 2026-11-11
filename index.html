@@ -1,121 +1,427 @@
-?variant="standard" title="Student Attendance Scanner — index.html" id="62841"}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Attendance System</title>
 
-  <title>Student Attendance Scanner</title>
+<script src="https://unpkg.com/html5-qrcode"></script>
 
-  <script src="https://unpkg.com/html5-qrcode"></script>
+<style>
+* {
+    box-sizing: border-box;
+}
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f1f5f9;
-      margin: 0;
-      padding: 20px;
-      text-align: center;
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+header {
+    background: linear-gradient(120deg, #0f172a, #1e40af);
+    color: white;
+    padding: 24px 7%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.logo {
+    width: 48px;
+    height: 48px;
+    background: rgba(255,255,255,.15);
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    font-size: 25px;
+}
+
+.brand h1 {
+    margin: 0;
+    font-size: 21px;
+}
+
+.brand p {
+    margin: 5px 0 0;
+    color: #bfdbfe;
+    font-size: 13px;
+}
+
+.datetime {
+    text-align: right;
+    font-size: 14px;
+    color: #dbeafe;
+}
+
+main {
+    max-width: 1050px;
+    margin: 35px auto;
+    padding: 0 20px;
+}
+
+.welcome {
+    margin-bottom: 25px;
+}
+
+.welcome h2 {
+    font-size: 27px;
+    margin: 0 0 8px;
+    color: #0f172a;
+}
+
+.welcome p {
+    color: #64748b;
+    margin: 0;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1.3fr .7fr;
+    gap: 22px;
+}
+
+.card {
+    background: white;
+    border-radius: 18px;
+    padding: 25px;
+    box-shadow: 0 5px 20px rgba(15,23,42,.05);
+}
+
+.card h3 {
+    margin: 0 0 8px;
+    color: #0f172a;
+    font-size: 19px;
+}
+
+.description {
+    color: #64748b;
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+#reader {
+    width: 100%;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+#reader video {
+    border-radius: 12px;
+}
+
+button {
+    border: none;
+    border-radius: 10px;
+    padding: 13px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .2s;
+}
+
+button:hover {
+    opacity: .88;
+    transform: translateY(-1px);
+}
+
+.primary {
+    background: #2563eb;
+    color: white;
+}
+
+.secondary {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.danger {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.buttons button {
+    flex: 1;
+}
+
+input {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 16px;
+    margin: 15px 0 10px;
+    outline: none;
+}
+
+input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px #dbeafe;
+}
+
+.manual-button {
+    width: 100%;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #94a3b8;
+    font-size: 12px;
+    margin: 22px 0;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #e2e8f0;
+}
+
+.result {
+    display: none;
+    padding: 18px;
+    margin-top: 20px;
+    border-radius: 12px;
+    animation: appear .3s ease;
+}
+
+.result h3 {
+    margin: 0 0 8px;
+}
+
+.result p {
+    margin: 0;
+    white-space: pre-line;
+    font-size: 14px;
+}
+
+.success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.sound-control {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding: 14px;
+    background: #f8fafc;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.sound-control label {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.sound-control input {
+    width: auto;
+    margin: 0;
+}
+
+.info-box {
+    background: #eff6ff;
+    padding: 18px;
+    border-radius: 12px;
+    margin-top: 18px;
+}
+
+.info-box h4 {
+    margin: 0 0 10px;
+    color: #1e40af;
+}
+
+.info-box p {
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.status {
+    display: inline-block;
+    background: #dcfce7;
+    color: #15803d;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 18px;
+}
+
+footer {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 12px;
+    padding: 25px;
+}
+
+@keyframes appear {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media(max-width: 750px) {
+    header {
+        padding: 20px;
     }
 
-    .container {
-      max-width: 420px;
-      margin: 20px auto;
-      background: white;
-      padding: 25px;
-      border-radius: 16px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    .datetime {
+        text-align: left;
     }
 
-    h2 { color: #1e3a8a; }
-
-    .subtitle { color: #64748b; }
-
-    #reader {
-      width: 100%;
-      margin: auto;
+    main {
+        margin: 22px auto;
+        padding: 0 14px;
     }
 
-    #result {
-      margin-top: 20px;
-      padding: 18px;
-      border-radius: 10px;
-      display: none;
-      white-space: pre-line;
+    .grid {
+        grid-template-columns: 1fr;
     }
 
-    .success {
-      background: #dcfce7;
-      color: #166534;
+    .welcome h2 {
+        font-size: 23px;
     }
 
-    .error {
-      background: #fee2e2;
-      color: #991b1b;
+    .card {
+        padding: 19px;
     }
-
-    .warning {
-      background: #fef3c7;
-      color: #92400e;
-    }
-
-    button {
-      background: #1e40af;
-      color: white;
-      border: none;
-      padding: 14px;
-      border-radius: 8px;
-      font-size: 16px;
-      margin-top: 15px;
-      cursor: pointer;
-      width: 100%;
-    }
-
-    input {
-      box-sizing: border-box;
-      width: 100%;
-      padding: 12px;
-      margin-top: 15px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-
-    .footer {
-      margin-top: 25px;
-      font-size: 12px;
-      color: #94a3b8;
-    }
-  </style>
+}
+</style>
 </head>
 
 <body>
 
-<div class="container">
+<header>
+    <div class="brand">
+        <div class="logo">🎓</div>
+        <div>
+            <h1>Student Attendance</h1>
+            <p>School Attendance Management System</p>
+        </div>
+    </div>
 
-  <h2>Student Attendance</h2>
-  <p class="subtitle">School QR Code Scanner</p>
+    <div class="datetime">
+        <div id="date"></div>
+        <div id="time"></div>
+    </div>
+</header>
 
-  <div id="reader"></div>
+<main>
 
-  <div id="result">
-    <div id="resultTitle" style="font-weight:bold;font-size:20px"></div>
-    <div id="resultDetails"></div>
-  </div>
+    <div class="welcome">
+        <h2>Attendance Scanner</h2>
+        <p>Scan student identification cards to record attendance.</p>
+    </div>
 
-  <button onclick="startScanner()">Start Scanner</button>
+    <div class="grid">
 
-  <p>Or enter Student ID manually:</p>
+        <section class="card">
+            <div class="status">● SYSTEM ONLINE</div>
 
-  <input type="text" id="manualID" placeholder="Enter Student ID">
+            <h3>QR Code Scanner</h3>
+            <p class="description">
+                Position the student's QR code inside the scanning area.
+            </p>
 
-  <button onclick="manualCheckIn()">Submit Attendance</button>
+            <div id="reader"></div>
 
-  <div class="footer">
-    Student Attendance Management System
-  </div>
+            <div class="buttons">
+                <button class="primary" id="startButton" onclick="startScanner()">
+                    📷 Start Camera
+                </button>
 
-</div>
+                <button class="danger" onclick="stopScanner()">
+                    Stop Camera
+                </button>
+            </div>
+
+            <div id="result" class="result">
+                <h3 id="resultTitle"></h3>
+                <p id="resultDetails"></p>
+            </div>
+        </section>
+
+        <section class="card">
+
+            <h3>Manual Attendance</h3>
+            <p class="description">
+                Enter the student's identification number manually.
+            </p>
+
+            <form onsubmit="manualCheckIn(); return false;">
+                <input
+                    type="text"
+                    id="manualID"
+                    placeholder="Example: STD001"
+                    autocomplete="off"
+                >
+
+                <button type="submit" class="primary manual-button">
+                    Submit Attendance →
+                </button>
+            </form>
+
+            <div class="divider">OR</div>
+
+            <div class="sound-control">
+                <label for="soundToggle">
+                    🔊 Attendance Sounds
+                </label>
+                <input type="checkbox" id="soundToggle" checked>
+            </div>
+
+            <div class="info-box">
+                <h4>How it works</h4>
+                <p>
+                    1. Start the camera scanner.<br>
+                    2. Scan the student's QR code.<br>
+                    3. Attendance is recorded automatically.<br>
+                    4. The result appears on screen with a sound notification.
+                </p>
+            </div>
+
+        </section>
+
+    </div>
+
+</main>
+
+<footer>
+    Student Attendance Management System<br>
+    Powered by Google Apps Script & Google Sheets
+</footer>
 
 <script>
 
@@ -125,189 +431,226 @@ let scanner = null;
 let scanning = false;
 let processing = false;
 
+function updateClock() {
+    const now = new Date();
+
+    document.getElementById("date").innerText =
+        now.toLocaleDateString("en-MY", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+        });
+
+    document.getElementById("time").innerText =
+        now.toLocaleTimeString("en-MY");
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+
+function playSound(type) {
+
+    if (!document.getElementById("soundToggle").checked) return;
+
+    try {
+        const AudioContext =
+            window.AudioContext || window.webkitAudioContext;
+
+        const context = new AudioContext();
+
+        function beep(frequency, start, duration) {
+            const oscillator = context.createOscillator();
+            const gain = context.createGain();
+
+            oscillator.connect(gain);
+            gain.connect(context.destination);
+
+            oscillator.frequency.value = frequency;
+            oscillator.type = "sine";
+
+            gain.gain.setValueAtTime(0.15, context.currentTime + start);
+            gain.gain.exponentialRampToValueAtTime(
+                0.001,
+                context.currentTime + start + duration
+            );
+
+            oscillator.start(context.currentTime + start);
+            oscillator.stop(context.currentTime + start + duration);
+        }
+
+        if (type === "success") {
+            beep(880, 0, 0.15);
+            beep(1175, 0.18, 0.2);
+        } else if (type === "warning") {
+            beep(660, 0, 0.15);
+            beep(660, 0.22, 0.15);
+        } else {
+            beep(300, 0, 0.35);
+        }
+
+        setTimeout(() => context.close(), 1000);
+
+    } catch (error) {
+        console.log("Audio unavailable:", error);
+    }
+}
+
 function showResult(type, title, details) {
 
-  const result = document.getElementById("result");
+    const result = document.getElementById("result");
 
-  result.style.display = "block";
-  result.className = type;
+    result.style.display = "block";
+    result.className = "result " + type;
 
-  document.getElementById("resultTitle").innerText = title;
-  document.getElementById("resultDetails").innerText = details || "";
+    document.getElementById("resultTitle").innerText = title;
+    document.getElementById("resultDetails").innerText = details || "";
+
+    playSound(type);
 }
 
 function sendAttendance(studentID) {
 
-  if (processing) return;
+    if (processing) return;
 
-  processing = true;
+    processing = true;
 
-  const callbackName = "attendanceCallback_" + Date.now();
-  const script = document.createElement("script");
+    const callbackName = "attendanceCallback_" + Date.now();
+    const script = document.createElement("script");
 
-  let completed = false;
+    let completed = false;
 
-  const timeout = setTimeout(function() {
+    const timeout = setTimeout(function() {
+        finish({
+            success: false,
+            message: "Connection timeout. Please try again."
+        });
+    }, 15000);
 
-    finish({
-      success: false,
-      message: "Connection timeout. Please try again."
-    });
+    function finish(response) {
 
-  }, 15000);
+        if (completed) return;
 
-  function finish(response) {
+        completed = true;
 
-    if (completed) return;
+        clearTimeout(timeout);
+        script.remove();
 
-    completed = true;
+        delete window[callbackName];
 
-    clearTimeout(timeout);
-    script.remove();
+        if (response.success) {
 
-    delete window[callbackName];
+            showResult(
+                "success",
+                "✓ ATTENDANCE SUCCESSFUL!",
+                "Student: " + response.name +
+                "\nClass: " + response.className
+            );
 
-    if (response.success) {
+        } else if (
+            response.message &&
+            response.message.includes("Already Checked In")
+        ) {
 
-      showResult(
-        "success",
-        "ATTENDANCE SUCCESSFUL!",
-        "Student: " + response.name +
-        "\nClass: " + response.className
-      );
+            showResult(
+                "warning",
+                "⚠ ALREADY CHECKED IN!",
+                response.name || ""
+            );
 
-    } else if (
-      response.message &&
-      response.message.includes("Already Checked In")
-    ) {
+        } else {
 
-      showResult(
-        "warning",
-        "ALREADY CHECKED IN!",
-        response.name || ""
-      );
+            showResult(
+                "error",
+                "✕ ATTENDANCE FAILED",
+                response.message || "Student Not Found!"
+            );
 
-    } else {
-
-      showResult(
-        "error",
-        response.message || "Student Not Found!",
-        response.name || ""
-      );
-
-    }
-
-    setTimeout(function() {
-
-      processing = false;
-
-      if (scanning && scanner) {
-        try {
-          scanner.resume();
-        } catch (error) {
-          console.log(error);
         }
-      }
 
-    }, 2500);
-  }
+        setTimeout(function() {
 
-  window[callbackName] = finish;
+            processing = false;
 
-  script.onerror = function(event) {
+            if (scanning && scanner) {
+                try {
+                    scanner.resume();
+                } catch (error) {
+                    console.log(error);
+                }
+            }
 
-  console.error("API request failed:", script.src, event);
-
-  finish({
-    success: false,
-    message: "Safari could not load the API request. Check your internet connection or browser settings."
-  });
-
-};
-
-script.onload = function() {
-  console.log("API script loaded successfully.");
-
-  setTimeout(function() {
-    if (!completed) {
-      finish({
-        success: false,
-        message: "API loaded, but no response was received."
-      });
+        }, 2500);
     }
-  }, 3000);
-};
 
-  script.src =
-    API_URL +
-    "?action=scan&id=" +
-    encodeURIComponent(studentID) +
-    "&callback=" +
-    callbackName;
+    window[callbackName] = finish;
 
-  document.body.appendChild(script);
+    script.onerror = function() {
+
+        finish({
+            success: false,
+            message: "Unable to connect to attendance server."
+        });
+
+    };
+
+    script.src =
+        API_URL +
+        "?action=scan&id=" +
+        encodeURIComponent(studentID) +
+        "&callback=" +
+        callbackName;
+
+    document.body.appendChild(script);
 }
 
 function startScanner() {
 
-  if (scanning) return;
+    if (scanning) return;
 
-  if (!scanner) {
-    scanner = new Html5Qrcode("reader");
-  }
-
-  scanner.start(
-    { facingMode: "environment" },
-    {
-      fps: 10,
-      qrbox: { width: 220, height: 220 }
-    },
-
-    function(decodedText) {
-
-      if (processing) return;
-
-      try {
-        scanner.pause(true);
-      } catch (error) {
-        console.log(error);
-      }
-
-      sendAttendance(decodedText);
-
+    if (!scanner) {
+        scanner = new Html5Qrcode("reader");
     }
 
-  ).then(function() {
+    scanner.start(
+        { facingMode: "environment" },
+        {
+            fps: 10,
+            qrbox: { width: 220, height: 220 }
+        },
 
-    scanning = true;
+        function(decodedText) {
 
-  }).catch(function(error) {
+            if (processing) return;
 
-    showResult(
-      "error",
-      "CAMERA ERROR",
-      String(error)
-    );
+            try {
+                scanner.pause(true);
+            } catch (error) {
+                console.log(error);
+            }
 
-  });
+            sendAttendance(decodedText);
+
+        }
+
+    ).then(function() {
+
+        scanning = true;
+
+        document.getElementById("startButton").innerText =
+            "✓ Camera Active";
+
+    }).catch(function(error) {
+
+        showResult(
+            "error",
+            "CAMERA ERROR",
+            String(error)
+        );
+
+    });
 }
 
-function manualCheckIn() {
+function stopScanner() {
 
-  const id = document.getElementById("manualID").value.trim();
-
-  if (!id) {
-    alert("Please enter Student ID");
-    return;
-  }
-
-  sendAttendance(id);
-
-  document.getElementById("manualID").value = "";
-
-}
-
-</script>
-
-</body>
-</html>
+    if (!scanner ||
